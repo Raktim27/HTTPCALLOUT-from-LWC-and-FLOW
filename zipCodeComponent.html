@@ -1,0 +1,14 @@
+<template>
+    <lightning-card title="ZIP Code Lookup">
+        <lightning-combobox label="Country" value={countryValue} options={countryOptions}
+                onchange={handlecountryValue}></lightning-combobox>
+        <lightning-input label="Enter ZIP Code" value={zipCode} onchange={handleInputChange}></lightning-input>
+        <lightning-button label="Lookup" onclick={handleLookup} class="slds-m-top_medium"></lightning-button>
+        <template if:true={errorMessage}>
+            <p class="slds-text-color_error">{errorMessage}</p>
+        </template>
+    </lightning-card>
+    <template if:true={enableScreen}>
+        <c-zip-Code-Result-Component result={result}></c-zip-Code-Result-Component>
+    </template>
+</template>
