@@ -1,0 +1,38 @@
+/**
+* @File Name : MockHttpResponseGenerator .cls
+* @Description :
+* @Author :
+* @Last Modified By :
+* @Last Modified On : September 13, 2024
+* @Modification Log :
+*==============================================================================
+* Ver | Date | Author | Modification
+*==============================================================================
+* 1.0 | September 13, 2024 |   | Initial Version
+**/
+
+@isTest
+global class MockHttpResponseGenerator implements HttpCalloutMock {
+    private String mockResponse;
+    private Integer mockStatusCode;
+    
+    // Method to set the mock response for success cases
+    public void setMockResponse(String jsonResponse) {
+        this.mockResponse = jsonResponse;
+        this.mockStatusCode = 200;  // Default to HTTP 200 OK
+    }
+    
+    // Method to set the mock response for error cases
+    public void setMockErrorResponse(Integer statusCode) {
+        this.mockResponse = '';
+        this.mockStatusCode = statusCode;
+    }
+    
+    // Implement the respond method
+    public HttpResponse respond(HttpRequest req) {
+        HttpResponse res = new HttpResponse();
+        res.setStatusCode(mockStatusCode);
+        res.setBody(mockResponse);
+        return res;
+    }
+}
