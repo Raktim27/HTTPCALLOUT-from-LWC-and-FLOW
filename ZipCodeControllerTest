@@ -1,0 +1,145 @@
+/**
+* @File Name : ZipCodeControllerTest.cls
+* @Description :
+* @Author :
+* @Last Modified By :
+* @Last Modified On : September 13, 2024
+* @Modification Log :
+*==============================================================================
+* Ver | Date | Author | Modification
+*==============================================================================
+* 1.0 | September 13, 2024 |   | Initial Version
+**/
+
+@isTest
+public class ZipCodeControllerTest {
+
+    @isTest
+    static void testGetZipCodeInfo_US() {
+        // Set up a mock response for the callout
+        Test.startTest();
+        MockHttpResponseGenerator mock = new MockHttpResponseGenerator();
+        mock.setMockResponse('{"country": "United States", "places": [{"place name": "Beverly Hills", "state": "California"}]}');
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        // Call the getZipCodeInfo method with a US zip code
+        Map<String, Object> result = ZipCodeController.getZipCodeInfo('US', '90210');
+
+        Test.stopTest();
+
+        // Assertions to verify the result
+        System.assertEquals('United States', result.get('country'), 'Country should be United States.');
+        System.assert(result.get('places').toString().contains('Beverly Hills'), 'Result should contain place name.');
+    }
+
+    @isTest
+    static void testGetZipCodeInfo_NonUS() {
+        // Set up a mock response for a non-US country
+        Test.startTest();
+        MockHttpResponseGenerator mock = new MockHttpResponseGenerator();
+        mock.setMockResponse('{"country": "Mexico", "places": [{"place name": "Mexico City", "state": "Distrito Federal"}]}');
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        // Call the getZipCodeInfo method with a non-US zip code
+        Map<String, Object> result = ZipCodeController.getZipCodeInfo('MX', '01000');
+
+        Test.stopTest();
+
+        // Assertions to verify the result
+        System.assertEquals('Mexico', result.get('country'), 'Country should be Mexico.');
+        System.assert(result.get('places').toString().contains('Mexico City'), 'Result should contain place name.');
+    }
+
+    @isTest
+    static void testGetZipCodeInfo_Error() {
+        // Set up a mock response for an error (404 or other error code)
+        Test.startTest();
+        MockHttpResponseGenerator mock = new MockHttpResponseGenerator();
+        mock.setMockErrorResponse(404);
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        try {
+            // Call the getZipCodeInfo method with an invalid zip code
+            ZipCodeController.getZipCodeInfo('US', '99999');  // Invalid zip code
+            System.assert(false, 'Expected an AuraHandledException to be thrown');
+        } catch (AuraHandledException e) {
+            // Verify the exception message
+            System.assertEquals('Script-thrown exception', e.getMessage());
+        }
+
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testGetZipCodeInfoFlow_US() {
+        // Set up a mock response for the callout
+        Test.startTest();
+        MockHttpResponseGenerator mock = new MockHttpResponseGenerator();
+        mock.setMockResponse('{"country": "United States", "places": [{"place name": "Beverly Hills", "state": "California"}]}');
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        // Create an InvocableRequest for the test
+        ZipCodeController.InvocableRequest invReq = new ZipCodeController.InvocableRequest();
+        invReq.country = 'US';
+        invReq.zipcode = '90210';
+
+        // Call the invocable method
+        List<ZipCodeController.InvocableRequest> requests = new List<ZipCodeController.InvocableRequest>{ invReq };
+        List<List<String>> result = ZipCodeController.getZipCodeInfoFlow(requests);
+
+        Test.stopTest();
+
+        // Assertions to verify the result
+        System.assertEquals(1, result.size(), 'Result should contain one record.');
+        System.assertEquals('United States', result[0][0], 'Country should be United States.');
+        System.assert(result[0][1].contains('Beverly Hills'), 'Result should contain place name.');
+    }
+
+    @isTest
+    static void testGetZipCodeInfoFlow_NonUS() {
+        // Set up a mock response for a non-US country
+        Test.startTest();
+        MockHttpResponseGenerator mock = new MockHttpResponseGenerator();
+        mock.setMockResponse('{"country": "Mexico", "places": [{"place name": "Mexico City", "state": "Distrito Federal"}]}');
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        // Create an InvocableRequest for the test
+        ZipCodeController.InvocableRequest invReq = new ZipCodeController.InvocableRequest();
+        invReq.country = 'MX';
+        invReq.zipcode = '01000';
+
+        // Call the invocable method
+        List<ZipCodeController.InvocableRequest> requests = new List<ZipCodeController.InvocableRequest>{ invReq };
+        List<List<String>> result = ZipCodeController.getZipCodeInfoFlow(requests);
+
+        Test.stopTest();
+
+        // Assertions to verify the result
+        System.assertEquals(1, result.size(), 'Result should contain one record.');
+        System.assertEquals('Non-US Country detected. Data has been stored.', result[0][0], 'Should indicate non-US country.');
+    }
+
+    @isTest
+    static void testGetZipCodeInfoFlow_Error() {
+        // Set up a mock response for an error (404 or other error code)
+        Test.startTest();
+        MockHttpResponseGenerator mock = new MockHttpResponseGenerator();
+        mock.setMockErrorResponse(404);
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        // Create an InvocableRequest for the test
+        ZipCodeController.InvocableRequest invReq = new ZipCodeController.InvocableRequest();
+        invReq.country = 'US';
+        invReq.zipcode = '99999';  // Invalid zip code for the test
+
+        // Call the invocable method
+        List<ZipCodeController.InvocableRequest> requests = new List<ZipCodeController.InvocableRequest>{ invReq };
+        List<List<String>> result = ZipCodeController.getZipCodeInfoFlow(requests);
+
+        Test.stopTest();
+
+        // Assertions to verify the result
+        System.assertEquals(1, result.size(), 'Result should contain one record.');
+        System.assertEquals('Error in fetching zipcode', result[0][0], 'Should indicate error in fetching zip code.');
+    }
+}
