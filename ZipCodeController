@@ -1,0 +1,181 @@
+/**
+* @File Name : ZipCodeController.cls
+* @Description :
+* @Author :
+* @Last Modified By :
+* @Last Modified On : September 13, 2024
+* @Modification Log :
+*==============================================================================
+* Ver | Date | Author | Modification
+*==============================================================================
+* 1.0 | September 13, 2024 |   | Initial Version
+**/
+
+public with sharing class ZipCodeController {
+    @AuraEnabled
+    public static Map<String, Object> getZipCodeInfo(String country,String zipCode) {
+        String url = 'https://api.zippopotam.us/'+country+'/'+zipCode;
+
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(url);
+        req.setMethod('GET');
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        if (res.getStatusCode() == 200) {
+            Map<String, Object> result = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+			System.debug('result'+result);
+            if (result.containsKey('country')) {
+                if (result.get('country') != 'US') {
+                    //saveToCustomObject(result);
+                }
+                return result;
+            }
+        }
+        throw new AuraHandledException('Invalid response from ZIP API');
+    }
+    
+    public class InvocableRequest {
+        @InvocableVariable
+        public String country;
+     
+        @InvocableVariable
+        public String zipcode;
+	}
+    
+    @InvocableMethod
+    public static List<List<String>> getZipCodeInfoFlow(List<InvocableRequest> invRec) {
+        System.debug(invRec);
+        String url = 'https://api.zippopotam.us/'+invRec[0].country+'/'+invRec[0].zipCode;
+		
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(url);
+        req.setMethod('GET');
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        System.debug('method'+res.getStatusCode());
+        List<List<String>> result = new List<List<String>>();
+        List<String> resultList = new List<String>();
+        if(res.getStatusCode() == 200){
+            Map<String, Object> resultMap = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+            if (resultMap.containsKey('country')) {
+                if (resultMap.get('country') != 'United States'){
+                    //saveToCustomObject(result);
+                    resultList.add('Non-US Country detected. Data has been stored.');
+                    result.add(resultList);
+                }
+                else{
+                    resultList.add((resultMap.get('country')).ToString());
+                    resultList.add((resultMap.get('places')).ToString());
+                    result.add(resultList);
+                }
+            }
+            return result ;
+        }
+        else{
+            resultList.add('Error in fetching zipcode');
+            result.add(resultList);
+            return result;
+        }
+        
+    }
+
+    /*private static void saveToCustomObject(Map<String, Object> zipData) {
+        Custom_Zipcode__c customZip = new Custom_Zipcode__c();
+        customZip.ZipCode__c = (String) zipData.get('post code');
+        customZip.Country__c = (String) zipData.get('country');
+		customZip.Place_Details__c = (String) zipData.get('places');
+        insert customZip;
+    }*/
+}/**
+* @File Name : ZipCodeController.cls
+* @Description :
+* @Author :
+* @Last Modified By :
+* @Last Modified On : September 13, 2024
+* @Modification Log :
+*==============================================================================
+* Ver | Date | Author | Modification
+*==============================================================================
+* 1.0 | September 13, 2024 |   | Initial Version
+**/
+
+public with sharing class ZipCodeController {
+    @AuraEnabled
+    public static Map<String, Object> getZipCodeInfo(String country,String zipCode) {
+        String url = 'https://api.zippopotam.us/'+country+'/'+zipCode;
+
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(url);
+        req.setMethod('GET');
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        if (res.getStatusCode() == 200) {
+            Map<String, Object> result = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+			System.debug('result'+result);
+            if (result.containsKey('country')) {
+                if (result.get('country') != 'US') {
+                    //saveToCustomObject(result);
+                }
+                return result;
+            }
+        }
+        throw new AuraHandledException('Invalid response from ZIP API');
+    }
+    
+    public class InvocableRequest {
+        @InvocableVariable
+        public String country;
+     
+        @InvocableVariable
+        public String zipcode;
+	}
+    
+    @InvocableMethod
+    public static List<List<String>> getZipCodeInfoFlow(List<InvocableRequest> invRec) {
+        System.debug(invRec);
+        String url = 'https://api.zippopotam.us/'+invRec[0].country+'/'+invRec[0].zipCode;
+		
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(url);
+        req.setMethod('GET');
+
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+        System.debug('method'+res.getStatusCode());
+        List<List<String>> result = new List<List<String>>();
+        List<String> resultList = new List<String>();
+        if(res.getStatusCode() == 200){
+            Map<String, Object> resultMap = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+            if (resultMap.containsKey('country')) {
+                if (resultMap.get('country') != 'United States'){
+                    //saveToCustomObject(result);
+                    resultList.add('Non-US Country detected. Data has been stored.');
+                    result.add(resultList);
+                }
+                else{
+                    resultList.add((resultMap.get('country')).ToString());
+                    resultList.add((resultMap.get('places')).ToString());
+                    result.add(resultList);
+                }
+            }
+            return result ;
+        }
+        else{
+            resultList.add('Error in fetching zipcode');
+            result.add(resultList);
+            return result;
+        }
+        
+    }
+
+    /*private static void saveToCustomObject(Map<String, Object> zipData) {
+        Custom_Zipcode__c customZip = new Custom_Zipcode__c();
+        customZip.ZipCode__c = (String) zipData.get('post code');
+        customZip.Country__c = (String) zipData.get('country');
+		customZip.Place_Details__c = (String) zipData.get('places');
+        insert customZip;
+    }*/
+}
